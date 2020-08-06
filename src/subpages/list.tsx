@@ -129,8 +129,8 @@ const IndexPage: React.FC<IndexPageProps> = ({ location }) => {
 };
 
 interface BlockListProps {
-  blocks: Pick<Block, 'hash' | 'index' | 'timestamp' | 'difficulty'>[];
-  loading: NonNullable<boolean>;
+  blocks: Pick<Block, 'index' | 'hash' | 'timestamp' | 'miner'>[];
+  loading: NonNullable<Boolean>;
 }
 
 const BlockList: React.FC<BlockListProps> = ({ blocks, loading }) => {
