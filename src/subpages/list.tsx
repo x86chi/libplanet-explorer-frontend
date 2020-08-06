@@ -9,13 +9,24 @@ import {
   IColumn,
 } from '@fluentui/react/lib/DetailsList';
 import { ShimmeredDetailsList } from '@fluentui/react/lib/ShimmeredDetailsList';
-import { Block, BlockListComponent } from '../generated/graphql';
+import {
+  Block,
+  BlockListComponent,
+  Transaction,
+  TransactionListComponent,
+} from '../generated/graphql';
 import useSearchParams from '../misc/useSearchParams';
 import Timestamp from '../components/Timestamp';
 
 import { IndexPageProps } from '../pages/index';
+import styled from '@emotion/styled';
 
 const POLL_INTERVAL = 2000;
+
+const ListWrapper = styled.section`
+  display: flex;
+  flex-direction: column;
+`;
 
 const IndexPage: React.FC<IndexPageProps> = ({ location }) => {
   const limit = 21;
@@ -50,7 +61,10 @@ const IndexPage: React.FC<IndexPageProps> = ({ location }) => {
         variables={{ offset, limit, excludeEmptyTxs }}
         pollInterval={POLL_INTERVAL}>
         {({ data, loading, error }) => {
-          if (error) return <p>error!</p>;
+          if (error) {
+            console.error(error);
+            return <p>error!</p>;
+          }
 
           const timestamps: Date[] | null =
             data && data.blockQuery && data.blockQuery.blocks
@@ -95,7 +109,7 @@ const IndexPage: React.FC<IndexPageProps> = ({ location }) => {
                   <p>Average difficulty in this page</p>
                 </div>
                 <div className="card" key="total-tx-number">
-                  <strong>{Number(totalTxNumber).toLocaleString()}</strong>
+                  <strong>{totalTxNumber.toLocaleString()}</strong>
                   <p>Total txs in this page</p>
                 </div>
               </div>
@@ -112,14 +126,35 @@ const IndexPage: React.FC<IndexPageProps> = ({ location }) => {
                   Older &rarr;
                 </DefaultButton>
               </div>
-              <BlockList
-                blocks={
-                  loading
-                    ? []
-                    : (data!.blockQuery!.blocks as NonNullable<Block[]>)
-                }
-                loading={loading}
-              />
+              <ListWrapper>
+                <BlockList
+                  blocks={
+                    loading
+                      ? []
+                      : (data!.blockQuery!.blocks as NonNullable<Block[]>)
+                  }
+                  loading={loading}
+                />
+                <TransactionListComponent skip={true}>
+                  {({ data, loading, error }) => {
+                    if (error) {
+                      console.error(error);
+                      return <p>error!</p>;
+                    }
+                    return (
+                      <TransactionList
+                        transactions={
+                          loading && data?.transactionQuery?.transactions
+                            ? []
+                            : (data.transactionQuery
+                                .transactions as NonNullable<Transaction[]>)
+                        }
+                        loading={loading}
+                      />
+                    );
+                  }}
+                </TransactionListComponent>
+              </ListWrapper>
             </>
           );
         }}
@@ -129,8 +164,8 @@ const IndexPage: React.FC<IndexPageProps> = ({ location }) => {
 };
 
 interface BlockListProps {
-  blocks: Pick<Block, 'index' | 'hash' | 'timestamp' | 'miner'>[];
-  loading: NonNullable<Boolean>;
+  blocks: Block[];
+  loading: boolean;
 }
 
 const BlockList: React.FC<BlockListProps> = ({ blocks, loading }) => {
@@ -241,4 +276,56 @@ const BlockList: React.FC<BlockListProps> = ({ blocks, loading }) => {
   );
 };
 
+interface TransactionListProps {
+  transactions: Transaction[];
+  loading: boolean;
+}
+
+const TransactionList: React.FC<TransactionListProps> = ({
+  transactions,
+  loading,
+}) => {
+  const columns: IColumn[] = [
+    {
+      key: 'id',
+      name: 'ID',
+      fieldName: 'id',
+      minWidth: 5,
+      maxWidth: 450,
+      isRowHeader: true,
+      isResizable: true,
+      isSorted: false,
+      isSortedDescending: false,
+      data: 'string',
+      isPadded: true,
+      onRender: ({ hash }) => <Link href={`./block/?${hash}`}>{hash}</Link>,
+    },
+    {
+      key: 'columnTimestamp',
+      name: 'Timestamp',
+      fieldName: 'timestamp',
+      minWidth: 100,
+      maxWidth: 200,
+      isRowHeader: true,
+      isResizable: true,
+      isSorted: false,
+      isSortedDescending: true,
+      data: 'string',
+      isPadded: true,
+      onRender: ({ timestamp }) => <Timestamp timestamp={timestamp} />,
+    },
+  ];
+
+  return (
+    <ShimmeredDetailsList
+      setKey="set"
+      items={loading ? [] : transactions}
+      columns={columns}
+      selectionMode={SelectionMode.none}
+      layoutMode={DetailsListLayoutMode.justified}
+      isHeaderVisible={true}
+      enableShimmer={loading}
+    />
+  );
+};
 export default IndexPage;
