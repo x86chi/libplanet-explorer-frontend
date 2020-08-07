@@ -13,7 +13,7 @@ import {
   Transaction,
   TransactionsByAccountComponent,
   Block,
-  BlockListComponent,
+  BlockListByMinerComponent,
 } from '../generated/graphql';
 import Timestamp from '../components/Timestamp';
 
@@ -100,7 +100,8 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
               ) : (
                 <div>No missing nonces.</div>
               )}
-              <BlockListComponent variables={{ miner: queryString }}>
+              <BlockListByMinerComponent
+                variables={{ miner: queryString, offset: 0 }}>
                 {({ data, loading, error }) => {
                   if (error) {
                     console.error(error);
@@ -120,7 +121,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
                     </>
                   );
                 }}
-              </BlockListComponent>
+              </BlockListByMinerComponent>
             </>
           );
         }}
