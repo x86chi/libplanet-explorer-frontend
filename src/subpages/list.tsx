@@ -16,7 +16,7 @@ type ListPageProps = IndexPageProps;
 const POLL_INTERVAL = 2000;
 
 const ListPage: React.FC<ListPageProps> = ({ location }) => {
-  const { offset, olderHandler, newerHandler } = useOffset(location);
+  const [offset, olderHandler, newerHandler] = useOffset(location);
   const [excludeEmptyTxs, setExcludeEmptyTxs] = useState(false);
   return (
     <main>

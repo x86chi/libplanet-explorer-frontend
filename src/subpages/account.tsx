@@ -32,7 +32,10 @@ type AccountPageProps = IndexPageProps;
 const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
   const [queryString] = useQueryString(location);
 
-  const { offset, olderHandler, newerHandler } = useOffset(location);
+  const [offset, olderHandler, newerHandler] = useOffset(
+    location,
+    'mined_blocks'
+  );
   const [excludeEmptyTxs, setExcludeEmptyTxs] = useState(false);
   return (
     <Wrapper>
