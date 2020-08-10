@@ -314,19 +314,6 @@ export const BlockList: React.FC<BlockListProps> = ({ blocks }) => {
         <>{parseInt(difficulty).toLocaleString()}</>
       ),
     },
-    {
-      key: 'columnTxNumber',
-      name: 'Tx #',
-      minWidth: 5,
-      maxWidth: 40,
-      isRowHeader: true,
-      isResizable: true,
-      isSorted: false,
-      isSortedDescending: false,
-      data: 'number',
-      isPadded: true,
-      onRender: ({ transactions }) => <>{transactions.length}</>,
-    },
   ];
   return (
     <DetailsList
