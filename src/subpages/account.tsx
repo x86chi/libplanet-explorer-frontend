@@ -135,6 +135,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
               <Checkbox
                 label="Include blocks having any tx"
                 checked={excludeEmptyTxs}
+                disabled={loading}
                 onChange={() => {
                   setExcludeEmptyTxs(!excludeEmptyTxs);
                 }}
@@ -142,7 +143,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
               <OffsetSwitch
                 olderHandler={olderHandler}
                 newerHandler={newerHandler}
-                disable={loading || offset < 1}
+                disable={{ older: loading || offset < 1, newer: loading }}
               />
               <BlockList blocks={blocks} loading={loading} columns={columns} />
             </>
