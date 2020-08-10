@@ -100,32 +100,31 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
               ) : (
                 <div>No missing nonces.</div>
               )}
-              <BlockListByMinerComponent
-                variables={{ miner: queryString, offset: 0 }}>
-                {({ data, loading, error }) => {
-                  if (error) {
-                    console.error(error);
-                    return <p>error!</p>;
-                  }
-                  if (!data || !data.blockQuery || !data.blockQuery.blocks)
-                    return <h2>Mined Blocks: Loading..</h2>;
-                  const { blocks } = data.blockQuery;
-                  return (
-                    <>
-                      <h2>Mined Blocks: {blocks.length}</h2>
-                      {blocks.length > 0 ? (
-                        <BlockList blocks={blocks as Block[]} />
-                      ) : (
-                        <div>No mined blocks</div>
-                      )}
-                    </>
-                  );
-                }}
-              </BlockListByMinerComponent>
             </>
           );
         }}
       </TransactionsByAccountComponent>
+      <BlockListByMinerComponent variables={{ miner: queryString, offset: 0 }}>
+        {({ data, loading, error }) => {
+          if (error) {
+            console.error(error);
+            return <p>error!</p>;
+          }
+          if (!data || !data.blockQuery || !data.blockQuery.blocks)
+            return <h2>Mined Blocks: Loading..</h2>;
+          const { blocks } = data.blockQuery;
+          return (
+            <>
+              <h2>Mined Blocks: {blocks.length}</h2>
+              {blocks.length > 0 ? (
+                <BlockList blocks={blocks as Block[]} />
+              ) : (
+                <div>No mined blocks</div>
+              )}
+            </>
+          );
+        }}
+      </BlockListByMinerComponent>
     </Wrapper>
   );
 };
