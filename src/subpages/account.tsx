@@ -281,24 +281,6 @@ export const BlockList: React.FC<BlockListProps> = ({ blocks }) => {
       onRender: ({ timestamp }) => <Timestamp timestamp={timestamp} />,
     },
     {
-      key: 'columnTimeTaken',
-      name: 'Time Taken',
-      minWidth: 50,
-      maxWidth: 200,
-      isRowHeader: true,
-      isResizable: true,
-      isSorted: false,
-      isSortedDescending: true,
-      data: 'string',
-      isPadded: true,
-      onRender: (block, index) => {
-        let beforeBlock = blocks[Math.min(index! + 1, blocks.length - 1)];
-        let beforeTimestamp = Date.parse(beforeBlock.timestamp);
-        let nowTimestamp = Date.parse(block.timestamp);
-        return <>{(nowTimestamp - beforeTimestamp) / 1000}</>;
-      },
-    },
-    {
       key: 'columnDifficulty',
       name: 'Difficulty',
       minWidth: 50,
