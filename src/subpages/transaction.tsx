@@ -4,13 +4,11 @@ import { TransactionByIdComponent } from '../generated/graphql';
 import { Link } from '@fluentui/react';
 import Timestamp from '../components/Timestamp';
 
-interface TransactionPageProps {
-  location: Location;
-}
+import { PageProps } from '../misc/pages';
 
-const TransactionPage: React.FC<TransactionPageProps> = ({ location }) => {
-  const [queryString, setQueryString] = useQueryString(location);
-  const id = queryString;
+type TransactionPageProps = PageProps;
+
+const TransactionPage: React.FC<TransactionPageProps> = ({ location, id }) => {
   return (
     <TransactionByIdComponent variables={{ id }}>
       {({ data, loading, error }) => {
@@ -43,7 +41,7 @@ const TransactionPage: React.FC<TransactionPageProps> = ({ location }) => {
         // FIXME: We'd better to use absolute paths and make Gatsby to
         // automatically rebase these absolute paths on the PATH_PREFIX
         // configuration.
-        const signerLink = `../account/?${transaction.signer}`;
+        const signerLink = `../account/${transaction.signer}`;
         return (
           <>
             <h2>Transaction Details</h2>
@@ -80,7 +78,7 @@ const TransactionPage: React.FC<TransactionPageProps> = ({ location }) => {
                   automatically rebase these absolute paths on the PATH_PREFIX
                   configuration.
                   */}
-                  <Link href={`../account/?${address}`}>
+                  <Link href={`../account/${address}`}>
                     <code>{address}</code>
                   </Link>
                 </dd>
@@ -94,7 +92,10 @@ const TransactionPage: React.FC<TransactionPageProps> = ({ location }) => {
                         <dt>{argument.key}</dt>
                         <dd>
                           <pre>
-                            <code> {JSON.stringify(argument.value, null, 2)} </code>
+                            <code>
+                              {' '}
+                              {JSON.stringify(argument.value, null, 2)}{' '}
+                            </code>
                           </pre>
                         </dd>
                       </React.Fragment>

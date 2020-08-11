@@ -11,13 +11,11 @@ import {
 import { BlockByHashComponent, Transaction } from '../generated/graphql';
 import Timestamp from '../components/Timestamp';
 
-interface BlockPageProps {
-  location: Location;
-}
+import { SubPage } from '../misc/pages';
 
-const BlockPage: React.FC<BlockPageProps> = ({ location }) => {
-  const [queryString, setQueryString] = useQueryString(location);
-  const hash = queryString;
+type BlockPageProps = SubPage;
+
+const BlockPage: React.FC<BlockPageProps> = ({ location, id: hash }) => {
   return (
     <BlockByHashComponent variables={{ hash }}>
       {({ data, loading, error }) => {
@@ -51,7 +49,7 @@ const BlockPage: React.FC<BlockPageProps> = ({ location }) => {
         // FIXME: We'd better to use absolute paths and make Gatsby to
         // automatically rebase these absolute paths on the PATH_PREFIX
         // configuration.
-        const minerLink = `../account/?${block.miner}`;
+        const minerLink = `../account/${block.miner}`;
         return (
           <>
             <h2>Block Details</h2>
@@ -82,7 +80,7 @@ const BlockPage: React.FC<BlockPageProps> = ({ location }) => {
                   // FIXME: We'd better to use absolute paths and make Gatsby
                   // to automatically rebase these absolute paths on
                   // the PATH_PREFIX configuration.
-                  <Link href={`./?${block.previousBlock.hash}`}>
+                  <Link href={`./${block.previousBlock.hash}`}>
                     <code>{block.previousBlock.hash}</code>
                   </Link>
                 ) : (
@@ -129,7 +127,7 @@ const TxList: React.FC<TxListProps> = ({ txs }) => {
       isPadded: true,
       // FIXME: We'd better to use absolute paths and make Gatsby automatically
       // to rebase these absolute paths on the PATH_PREFIX configuration.
-      onRender: ({ id }) => <Link href={`../transaction/?${id}`}>{id}</Link>,
+      onRender: ({ id }) => <Link href={`../transaction/${id}`}>{id}</Link>,
     },
     {
       key: 'columnSigner',
@@ -147,7 +145,7 @@ const TxList: React.FC<TxListProps> = ({ txs }) => {
         // FIXME: We'd better to use absolute paths and make Gatsby to
         // automatically rebase these absolute paths on the PATH_PREFIX
         // configuration.
-        <Link href={`../account/?${signer}`}>{signer}</Link>
+        <Link href={`../account/${signer}`}>{signer}</Link>
       ),
     },
     {
@@ -189,7 +187,7 @@ const TxList: React.FC<TxListProps> = ({ txs }) => {
       isHeaderVisible={true}
       // FIXME: We'd better to use absolute paths and make Gatsby automatically
       // to rebase these absolute paths on the PATH_PREFIX configuration.
-      onItemInvoked={tx => navigate(`../transaction/?${tx.id}`)}
+      onItemInvoked={tx => navigate(`../transaction/${tx.id}`)}
     />
   );
 };

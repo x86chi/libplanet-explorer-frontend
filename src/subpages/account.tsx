@@ -12,6 +12,7 @@ import {
 import Wrapper from '../components/Wrapper';
 import BlockList from '../components/BlockList';
 import OffsetSwitch from '../components/OffsetSwitch';
+import Timestamp from '../components/Timestamp';
 
 import {
   Transaction,
@@ -25,13 +26,11 @@ import { IndexPageProps } from '../pages';
 import useQueryString from '../misc/useQueryString';
 import useOffset, { limit } from '../misc/useOffset';
 import { columns } from '../misc/columns';
-import Timestamp from '../components/Timestamp';
+import { SubPage } from '../misc/pages';
 
-type AccountPageProps = IndexPageProps;
+type AccountPageProps = SubPage;
 
-const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
-  const [queryString] = useQueryString(location);
-
+const AccountPage: React.FC<AccountPageProps> = ({ location, id: hash }) => {
   const [offset, olderHandler, newerHandler] = useOffset(
     location,
     'mined_blocks'
@@ -41,11 +40,10 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
     <Wrapper>
       <h1>Account Details</h1>
       <p>
-        Account Number: <b>{queryString}</b>
+        Account Number: <b>{hash}</b>
       </p>
 
-      <TransactionsByAccountComponent
-        variables={{ involvedAddress: queryString }}>
+      <TransactionsByAccountComponent variables={{ involvedAddress: hash }}>
         {({ data, loading, error }) => {
           if (loading) return <p>loading&hellip;</p>;
           if (error) return <p>error!</p>;
@@ -57,7 +55,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
           const signedTransactions: Transaction[] = [],
             involvedTransactions: Transaction[] = [];
           transactions.forEach(tx => {
-            if (tx.signer === queryString) {
+            if (tx.signer === hash) {
               signedTransactions.push(tx);
             } else {
               involvedTransactions.push(tx);
@@ -120,7 +118,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
       </TransactionsByAccountComponent>
       <h2>Mined Blocks</h2>
       <BlockListComponent
-        variables={{ offset, limit, excludeEmptyTxs, miner: queryString }}>
+        variables={{ offset, limit, excludeEmptyTxs, miner: hash }}>
         {({ data, loading, error }) => {
           if (error) {
             console.error(error);
@@ -191,7 +189,7 @@ const TransactionsList: React.FC<TxListProps> = ({ transactions }) => {
       // FIXME: We'd better to use absolute paths and make Gatsby automatically
       // to rebase these absolute paths on the PATH_PREFIX configuration.
       onRender: ({ id }: Transaction) => (
-        <Link href={`../transaction/?${id}`}>{id}</Link>
+        <Link href={`../transaction/${id}`}>{id}</Link>
       ),
     },
     {
@@ -222,7 +220,7 @@ const TransactionsList: React.FC<TxListProps> = ({ transactions }) => {
       onRender: ({ signer }: Transaction) => (
         // FIXME: We'd better to use absolute paths and make Gatsby automatically
         // to rebase these absolute paths on the PATH_PREFIX configuration.
-        <Link href={`./?${signer}`}>{signer}</Link>
+        <Link href={`./${signer}`}>{signer}</Link>
       ),
     },
     {
@@ -254,7 +252,7 @@ const TransactionsList: React.FC<TxListProps> = ({ transactions }) => {
       isHeaderVisible={true}
       // FIXME: We'd better to use absolute paths and make Gatsby automatically
       // to rebase these absolute paths on the PATH_PREFIX configuration.
-      onItemInvoked={({ id }: Transaction) => navigate(`../transaction/?${id}`)}
+      onItemInvoked={({ id }: Transaction) => navigate(`../transaction/${id}`)}
     />
   );
 };

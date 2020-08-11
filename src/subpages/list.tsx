@@ -9,9 +9,9 @@ import { columns, commonProps } from '../misc/columns';
 import BlockList from '../components/BlockList';
 import OffsetSwitch from '../components/OffsetSwitch';
 
-import { IndexPageProps } from '../pages/index';
+import { PageProps } from '../misc/pages';
 
-type ListPageProps = IndexPageProps;
+type ListPageProps = PageProps;
 
 const POLL_INTERVAL = 2000;
 

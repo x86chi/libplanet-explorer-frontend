@@ -3,8 +3,8 @@ const path = require('path');
 const GRAPHQL_ENDPOINTS = JSON.parse(process.env.GRAPHQL_ENDPOINTS);
 
 function readdirAsync(path) {
-  return new Promise(function (resolve, reject) {
-    fs.readdir(path, function (error, result) {
+  return new Promise(function(resolve, reject) {
+    fs.readdir(path, function(error, result) {
       if (error) {
         reject(error);
       } else {
@@ -27,14 +27,20 @@ exports.createPages = async ({ graphql, actions }) => {
       const pagePath =
         subPath === '' ? `${endpoint.name}/` : `${endpoint.name}/${subPath}/`;
 
-      createPage({
+      const pageProps = {
         path: pagePath,
         component: path.resolve(`src/subpages/${file}`),
         isPermanent: true,
         context: {
           endpoint,
         },
-      });
+      };
+
+      if (file === 'list.tsx' || file === 'search.tsx') {
+        createPage(pageProps);
+        return;
+      }
+      createPage({ ...pageProps, matchPath: pagePath + ':id' });
     });
   });
 };

@@ -36,9 +36,7 @@ export const columns = [
     isSortedDescending: false,
     data: 'string',
     isPadded: true,
-    onRender: ({ hash }: Block) => (
-      <Link href={`./block/?${hash}`}>{hash}</Link>
-    ),
+    onRender: ({ hash }: Block) => <Link href={`./block/${hash}`}>{hash}</Link>,
   },
   {
     key: 'columnTimestamp',
@@ -63,7 +61,7 @@ export const columns = [
     data: 'string',
     isPadded: true,
     onRender: ({ miner }: Block) => (
-      <Link href={`./account/?${miner}`}>{miner}</Link>
+      <Link href={`./account/${miner}`}>{miner}</Link>
     ),
   },
   {

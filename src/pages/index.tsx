@@ -3,9 +3,7 @@ import Wrapper from '../components/Wrapper';
 
 import { GRAPHQL_ENDPOINTS } from '../misc/graphQLEndPoint';
 
-export interface IndexPageProps {
-  location: Location;
-}
+type IndexPageProps = PageProps;
 
 const IndexPage: React.FC<IndexPageProps> = ({ location }) => {
   return (
