@@ -44,14 +44,6 @@ query BlockList(
   }
 }
 
-query BlockListByMiner($miner: Address) {
-  blockQuery {
-    blocks(miner: $miner) {
-      ...BlockCommon
-    }
-  }
-}
-
 query BlockByHash($hash: ID) {
   blockQuery {
     block(hash: $hash) {
