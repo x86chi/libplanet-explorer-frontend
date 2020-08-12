@@ -48,15 +48,25 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
       <TransactionsByAccountComponent
         variables={{ offset: txOffset, limit, involvedAddress: hash }}>
         {({ data, loading, error }) => {
-          if (loading) return <p>loading&hellip;</p>;
           if (error) {
             console.error(error);
             return <p>{error.message}</p>;
           }
-          const { transactions } = data!.transactionQuery!;
-          if (!transactions) {
-            return <p>There are no transactions.</p>;
-          }
+
+          if (loading)
+            return (
+              <>
+                <OffsetSwitch disable={{ older: true, newer: true }} />
+                <TransactionListWrap loading={true} />
+              </>
+            );
+
+          const transactions =
+            data && data.transactionQuery && data.transactionQuery.transactions
+              ? data.transactionQuery.transactions
+              : null;
+
+          if (transactions === null) throw Error('transactions query failed');
 
           const signedTransactions: Transaction[] = [],
             involvedTransactions: Transaction[] = [];
@@ -82,43 +92,22 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
             }
           }
 
-          const numOfSigned = signedTransactions.length;
-          const numOfInvolved = involvedTransactions.length;
-          const numOfMissingNonces = missingNonces.length;
-
           return (
             <>
               <OffsetSwitch
                 olderHandler={txOlderHandler}
                 newerHandler={txNewerHandler}
-                disable={{ older: loading || txOffset < 1, newer: loading }}
+                disable={{
+                  older: (loading || txOffset < 1) && transactions.length === 0,
+                  newer: loading || transactions.length === 0,
+                }}
               />
-              <h2>Signed Transactions: {numOfSigned}</h2>
-              {numOfSigned > 0 ? (
-                <TransactionList
-                  loading={loading}
-                  items={loading ? null : (signedTransactions as Transaction[])}
-                />
-              ) : (
-                <div>No transactions of this type</div>
-              )}
-              <h2>Involved Transactions: {numOfInvolved}</h2>
-              {numOfInvolved ? (
-                <TransactionList
-                  loading={loading}
-                  items={
-                    loading ? null : (involvedTransactions as Transaction[])
-                  }
-                />
-              ) : (
-                <div>No transactions of this type</div>
-              )}
-              <h2>Missing Nonces: {numOfMissingNonces}</h2>
-              {numOfMissingNonces ? (
-                missingNonces.map(nonce => <p>{nonce}</p>)
-              ) : (
-                <div>No missing nonces.</div>
-              )}
+              <TransactionListWrap
+                loading={false}
+                signed={signedTransactions}
+                involved={involvedTransactions}
+                missingNonces={missingNonces}
+              />
             </>
           );
         }}
@@ -162,6 +151,49 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
     </Wrapper>
   );
 };
+
+interface TransactionListWrapProps {
+  signed?: Transaction[];
+  involved?: Transaction[];
+  missingNonces?: number[];
+  loading: boolean;
+}
+
+const TransactionListWrap: React.FC<TransactionListWrapProps> = ({
+  signed,
+  involved,
+  missingNonces,
+  loading,
+}) => (
+  <>
+    <h2>Signed Transactions {counter(signed)}</h2>
+    <TransactionList
+      loading={loading}
+      items={signed ? signed : null}
+      notFoundMessage={'No Signed Transactions'}
+    />
+    <h2>Involved Transactions {counter(involved)}</h2>
+    <TransactionList
+      loading={loading}
+      items={involved ? involved : null}
+      notFoundMessage={'No Involved Transactions'}
+    />
+    <h2>Missing Nonces {counter(missingNonces)}</h2>
+    {missingNonces ? (
+      missingNonces.length > 0 ? (
+        missingNonces.map(nonce => <p>{nonce}</p>)
+      ) : (
+        <div>No missing nonces.</div>
+      )
+    ) : (
+      'Loading..'
+    )}
+  </>
+);
+
+function counter(items?: any[]) {
+  return items !== undefined && items.length > 0 && `: ${items.length}`;
+}
 
 interface TransactionListProps extends Omit<OmitListProps, 'columns'> {
   items: Transaction[] | null;

@@ -13,6 +13,7 @@ interface ListProps {
   loading: boolean;
   columns: IColumn[];
   onItemInvoked: (item: any) => void;
+  notFoundMessage?: string;
 }
 
 const POLL_INTERVAL = 2000;
@@ -22,19 +23,22 @@ const List: React.FC<ListProps> = ({
   loading,
   columns,
   onItemInvoked,
-}) => (
-  <ShimmeredDetailsList
-    setKey="set"
-    items={items === null || loading ? [] : items}
-    columns={columns}
-    selectionMode={SelectionMode.none}
-    layoutMode={DetailsListLayoutMode.justified}
-    isHeaderVisible={true}
-    enableShimmer={loading}
-    onItemInvoked={onItemInvoked}
-  />
-);
-
+  notFoundMessage,
+}) => {
+  if (!loading && notFoundMessage) return <p>{notFoundMessage}</p>;
+  return (
+    <ShimmeredDetailsList
+      setKey="set"
+      items={items === null || loading ? [] : items}
+      columns={columns}
+      selectionMode={SelectionMode.none}
+      layoutMode={DetailsListLayoutMode.justified}
+      isHeaderVisible={true}
+      enableShimmer={loading}
+      onItemInvoked={onItemInvoked}
+    />
+  );
+};
 export default List;
 
 export type OmitListProps = Omit<ListProps, 'onItemInvoked'>;
