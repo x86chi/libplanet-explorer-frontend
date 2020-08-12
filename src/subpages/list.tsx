@@ -4,9 +4,9 @@ import { Checkbox, IColumn, DefaultButton } from '@fluentui/react';
 import { Block, BlockListComponent } from '../generated/graphql';
 
 import useOffset, { limit } from '../misc/useOffset';
-import { columns, commonProps } from '../misc/columns';
+import { mineColumns, commonProps } from '../misc/columns';
 
-import BlockList from '../components/BlockList';
+import { BlockList } from '../components/List';
 import OffsetSwitch from '../components/OffsetSwitch';
 
 import { IndexPageProps } from '../pages/index';
@@ -64,7 +64,11 @@ const ListPage: React.FC<ListPageProps> = ({ location }) => {
                 newerHandler={newerHandler}
                 disable={{ older: loading, newer: loading || offset < 1 }}
               />
-              <BlockList blocks={blocks} loading={loading} columns={columns} />
+              <BlockList
+                items={blocks}
+                loading={loading}
+                columns={mineColumns}
+              />
             </>
           );
         }}

@@ -10,7 +10,7 @@ import {
 } from '@fluentui/react';
 
 import Wrapper from '../components/Wrapper';
-import BlockList from '../components/BlockList';
+import List, { BlockList, OmitListProps } from '../components/List';
 import OffsetSwitch from '../components/OffsetSwitch';
 import Timestamp from '../components/Timestamp';
 
@@ -25,14 +25,15 @@ import { IndexPageProps } from '../pages';
 
 import useQueryString from '../misc/useQueryString';
 import useOffset, { limit } from '../misc/useOffset';
-import { columns } from '../misc/columns';
+import { mineColumns, txColumns } from '../misc/columns';
 
 type AccountPageProps = IndexPageProps;
 
 const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
   const hash = useQueryString(location)[0].slice(0, 42);
 
-  const [offset, olderHandler, newerHandler] = useOffset(
+  const [txOffset, txOlderHandler, txNewerHandler] = useOffset(location, 'tx');
+  const [mineOffset, mineOlderHandler, mineNewerHandler] = useOffset(
     location,
     'mined_blocks'
   );
@@ -44,10 +45,14 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
         Account Number: <b>{hash}</b>
       </p>
 
-      <TransactionsByAccountComponent variables={{ involvedAddress: hash }}>
+      <TransactionsByAccountComponent
+        variables={{ offset: txOffset, limit, involvedAddress: hash }}>
         {({ data, loading, error }) => {
           if (loading) return <p>loading&hellip;</p>;
-          if (error) return <p>error!</p>;
+          if (error) {
+            console.error(error);
+            return <p>{error.message}</p>;
+          }
           const { transactions } = data!.transactionQuery!;
           if (!transactions) {
             return <p>There are no transactions.</p>;
@@ -83,25 +88,26 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
 
           return (
             <>
+              <OffsetSwitch
+                olderHandler={txOlderHandler}
+                newerHandler={txNewerHandler}
+                disable={{ older: loading || txOffset < 1, newer: loading }}
+              />
               <h2>Signed Transactions: {numOfSigned}</h2>
               {numOfSigned > 0 ? (
-                <TransactionsList
-                  transactions={
-                    loading
-                      ? []
-                      : (signedTransactions as NonNullable<Transaction[]>)
-                  }
+                <TransactionList
+                  loading={loading}
+                  items={loading ? null : (signedTransactions as Transaction[])}
                 />
               ) : (
                 <div>No transactions of this type</div>
               )}
               <h2>Involved Transactions: {numOfInvolved}</h2>
               {numOfInvolved ? (
-                <TransactionsList
-                  transactions={
-                    loading
-                      ? []
-                      : (involvedTransactions as NonNullable<Transaction[]>)
+                <TransactionList
+                  loading={loading}
+                  items={
+                    loading ? null : (involvedTransactions as Transaction[])
                   }
                 />
               ) : (
@@ -119,7 +125,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
       </TransactionsByAccountComponent>
       <h2>Mined Blocks</h2>
       <BlockListComponent
-        variables={{ offset, limit, excludeEmptyTxs, miner: hash }}>
+        variables={{ offset: mineOffset, limit, excludeEmptyTxs, miner: hash }}>
         {({ data, loading, error }) => {
           if (error) {
             console.error(error);
@@ -144,7 +150,11 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
                 newerHandler={mineNewerHandler}
                 disable={{ older: loading, newer: loading || mineOffset < 1 }}
               />
-              <BlockList blocks={blocks} loading={loading} columns={columns} />
+              <BlockList
+                items={blocks}
+                loading={loading}
+                columns={mineColumns}
+              />
             </>
           );
         }}
@@ -153,109 +163,16 @@ const AccountPage: React.FC<AccountPageProps> = ({ location }) => {
   );
 };
 
-interface TxListProps {
-  transactions: Pick<
-    Transaction,
-    'id' | 'nonce' | 'signature' | 'signer' | 'timestamp'
-  >[];
+interface TransactionListProps extends Omit<OmitListProps, 'columns'> {
+  items: Transaction[] | null;
 }
 
-const TransactionsList: React.FC<TxListProps> = ({ transactions }) => {
-  const columns: IColumn[] = [
-    {
-      key: 'coulmnNonce',
-      name: 'Nonce',
-      fieldName: 'nonce',
-      minWidth: 5,
-      maxWidth: 50,
-      isRowHeader: true,
-      isResizable: true,
-      isSorted: false,
-      isSortedDescending: true,
-      data: 'string',
-      isPadded: true,
-    },
-    {
-      key: 'columnId',
-      name: 'ID',
-      fieldName: 'id',
-      minWidth: 100,
-      maxWidth: 200,
-      isRowHeader: true,
-      isResizable: true,
-      isSorted: false,
-      isSortedDescending: true,
-      data: 'number',
-      isPadded: true,
-      // FIXME: We'd better to use absolute paths and make Gatsby automatically
-      // to rebase these absolute paths on the PATH_PREFIX configuration.
-      onRender: ({ id }: Transaction) => (
-        <Link href={`../transaction/?${id}`}>{id}</Link>
-      ),
-    },
-    {
-      key: 'columnSignature',
-      name: 'Signature',
-      fieldName: 'signature',
-      minWidth: 100,
-      maxWidth: 200,
-      isRowHeader: true,
-      isResizable: true,
-      isSorted: false,
-      isSortedDescending: true,
-      data: 'number',
-      isPadded: true,
-    },
-    {
-      key: 'columnSigner',
-      name: 'Signer',
-      fieldName: 'signer',
-      minWidth: 100,
-      maxWidth: 200,
-      isRowHeader: true,
-      isResizable: true,
-      isSorted: false,
-      isSortedDescending: true,
-      data: 'number',
-      isPadded: true,
-      onRender: ({ signer }: Transaction) => (
-        // FIXME: We'd better to use absolute paths and make Gatsby automatically
-        // to rebase these absolute paths on the PATH_PREFIX configuration.
-        <Link href={`./?${signer}`}>{signer}</Link>
-      ),
-    },
-    {
-      key: 'columnTimestamp',
-      name: 'Timestamp',
-      fieldName: 'timestamp',
-      minWidth: 100,
-      maxWidth: 200,
-      isRowHeader: true,
-      isResizable: true,
-      isSorted: false,
-      isSortedDescending: true,
-      data: 'number',
-      isPadded: true,
-      onRender: ({ timestamp }: Transaction) => (
-        <Timestamp timestamp={timestamp} />
-      ),
-    },
-  ];
-
-  return (
-    <DetailsList
-      items={transactions}
-      columns={columns}
-      selectionMode={SelectionMode.none}
-      getKey={(tx: Transaction) => tx.id}
-      setKey="set"
-      layoutMode={DetailsListLayoutMode.justified}
-      isHeaderVisible={true}
-      // FIXME: We'd better to use absolute paths and make Gatsby automatically
-      // to rebase these absolute paths on the PATH_PREFIX configuration.
-      onItemInvoked={({ id }: Transaction) => navigate(`../transaction/?${id}`)}
-    />
-  );
-};
+export const TransactionList: React.FC<TransactionListProps> = props => (
+  <List
+    {...props}
+    columns={txColumns}
+    onItemInvoked={block => navigate(`/search/?${block.hash}`)}
+  />
+);
 
 export default AccountPage;
